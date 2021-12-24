@@ -2,6 +2,8 @@ package com.ay.kg.controller;
 
 import com.ay.kg.model.Node;
 import com.ay.kg.service.NodeService;
+import com.ay.kg.util.PageParam;
+import com.ay.kg.util.PageResult;
 import com.ay.kg.util.Result;
 import com.ay.kg.util.JavaGetProperty;
 import com.google.common.collect.Lists;
@@ -28,7 +30,7 @@ public class NodeController  extends JavaGetProperty{
 
     /**
      * 支持多条件组合查询
-     * http://localhost:8080/node/getNodeOne?leftLabel=me&leftNodeName=刘哈哈
+     * http://localhost:8082/node/getNodeOne?leftLabel=me&leftNodeName=刘哈哈
      * @param node
      * @return
      */
@@ -43,41 +45,13 @@ public class NodeController  extends JavaGetProperty{
             }
     }
 
+    @ApiOperation(value = "所有关系的数量")
+    @RequestMapping(value = "getAllNotNodeNum", method = RequestMethod.POST)
+    public int getAllNotNodeNum() throws Exception{
+        int num = nodeService.getAllNotNodeNum();
+        return num;
+    }
 
-    /**
-     * 获取某个节点的所有关系
-     * http://localhost:8080/node/getNodeAndRelationshipList?leftLabel=age&leftNodeNumber=c98a09db2a6911ec9c3e00e04a68073f
-     * @param leftLabel
-     * @param leftNodeNumber
-     * @return
-     */
-//    @ApiOperation(value="获取某个节点的所有关系",tags = {"获取某个节点的所有关系"},notes="获取某个节点的所有关系")
-//    @RequestMapping(value = "getNodeAndRelationshipList", method = RequestMethod.POST)
-//    public String getNodeAndRelationshipList(
-//            @ApiParam(name="leftLabel",value="标签名称",required=true)  String leftLabel,
-//            @ApiParam(name="leftNodeNumber",value="节点UUID",required=true)  String leftNodeNumber) {
-//        List<Record> list=nodeService.getNodeAndRelationshipList( leftLabel,   leftNodeNumber);
-//        return Result.toClient(list);
-//    }
-
-
-    /**
-     * 根据节点关系获取双向节点信息
-     * http://localhost:8080/node/getNodeListByRelationship?leftLabel=age&leftNodeNumber=c98a09db2a6911ec9c3e00e04a68073f&leftType=所属
-     * @param leftLabel
-     * @param leftNodeNumber
-     * @param leftType
-     * @return
-     */
-//    @ApiOperation(value="根据节点关系获取双向节点信息",tags = {"根据节点关系获取双向节点信息"}, notes="根据节点关系获取双向节点信息,")
-//    @RequestMapping(value = "getNodeListByRelationship", method = RequestMethod.POST)
-//    public String getNodeListByRelationship(@ApiParam(name="leftLabel",value="标签名称",required=true) String leftLabel,
-//                                            @ApiParam(name="leftNodeNumber",value="节点UUID",required=true) String leftNodeNumber,
-//                                            @ApiParam(name="leftType",value="关系",required=true) String leftType) {
-//        List<Record> list= nodeService.getNodeListByRelationship( leftLabel,    leftNodeNumber,  leftType);
-//
-//        return Result.toClient(list);
-//    }
 
     /**
      * 根据A节点标签获取,A节点的数据和A节点的下一级节点数据
@@ -104,8 +78,86 @@ public class NodeController  extends JavaGetProperty{
 
     }
 
+    /**
+     * 获取单个节点的关系信息数量
+     * http://localhost:8082/node/getNodeNodeRelationshiCount?label=age&nodeNumber=2a1d1c4a2f764838855add245ef2da91
+     * @param label
+     * @param nodeNumber
+     * @return
+     */
+    @ApiOperation(value="获取单个节点的关系信息数量",tags = {"获取单个节点的关系信息数量"},notes="获取单个节点的关系信息数量")
+    @RequestMapping(value = "getNodeNodeRelationshiCount", method = RequestMethod.POST)
+    public int getNodeNodeRelationshiCount(@ApiParam(name = "label", value = "节点的标签", required = true) String label,
+                                           @ApiParam(name = "nodeNumber", value = "节点的标识", required = true) String nodeNumber) throws Exception{
+        return nodeService.getNodeNodeRelationshiCount(label,nodeNumber);
+
+    }
+
+    /**
+     * 查询指定节点的深度
+     * http://localhost:8082/node/getDepthOfQueryNode?leftLabel=people&num=2&leftNodeNumber=8ca8026da0c94a76bb5e63022c1e39cb
+     * @param pageNum 第几页
+     * @param leftLabel 节点标签
+     * @param num 节点的第n级关系
+     * @param leftNodeNumber 节点的标识
+     * @parm pageSize 每页几条
+     * @return
+     */
+    @ApiOperation(value = "指定节点查询深度",notes = "查询节点的等级由“num”控制")
+    @RequestMapping(value = "getDepthOfQueryNode",method = RequestMethod.POST)
+    public Object getDepthOfQueryNode(@ApiParam(name = "pageParam", value = "工具类包含pageNum 第几页，pageSize 每页几条", required = true) PageParam pageParam,
+                                      @ApiParam(name = "leftLabel", value = "节点的标签", required = true) String leftLabel,
+                                      @ApiParam(name = "num", value = "查询节点的第n级关系") Integer num,
+                                      @ApiParam(name = "leftNodeNumber", value = "节点的标识", required = true) String leftNodeNumber) throws Exception{
+        int pageStart = pageParam.getPageStart();
+        int pageNum = pageParam.getPageNum();
+        int pageSize = pageParam.getPageSize();
+        List<Node> nodeList = nodeService.getDepthOfQueryNode(leftLabel, num, leftNodeNumber,pageStart, pageSize);
+        int total = nodeService.getDepthOfQueryNodeCount(leftLabel, num, leftNodeNumber);
+        PageResult pageResult = new PageResult(pageNum, pageSize, total, nodeList);
+        HashMap<Object,Object> res = new HashMap<>();
+        res.put("data",nodeList);
+        res.put("number",total);
+        return res;
+    }
+
+    @RequestMapping("getCount")
+    public Object getCount(String leftLabel, Integer num, String leftNodeNumber) throws Exception{
+        int count = nodeService.getDepthOfQueryNodeCount(leftLabel, num, leftNodeNumber);
+        return count;
+    }
+
+    /**
+     * http://localhost:8082/node/getPageNotRelationShipNode?pageNum=1&pageSize=5&leftLabel=age&leftNodeName=宋&leftNodeNumber=c98a03622a6911ec9c3e00e04a68073f
+     * 根据条件查询没有关系的节点，使用工具类分页（条件可选填）
+     * @param pageParam（两个参数pageNum,pageSize）
+     * @return
+     */
+    @ApiOperation(value = "使用工具类对没有关系的节点信息查询", notes = "传入两个参数，当前第几页，每页分几条")
+    @RequestMapping(value = "getPageNotRelationShipNode")
+    public Object getPageNotRelationShipNode(//@ApiParam(name = "pageNum", value = "两个参数pageNum 第几页，pageSize 每页几条", required = true) int pageNum,
+                                             @ApiParam(name = "pageParam", value = "两个参数pageNum 第几页，pageSize 每页几条", required = true) PageParam pageParam,
+                                             @ApiParam(name = "leftLabel", value = "标签名", required = true) String leftLabel,
+                                             @ApiParam(name = "leftNodeName", value = "节点名", required = true) String leftNodeName,
+                                             @ApiParam(name = "leftNodeNumber", value = "节点标识", required = true) String leftNodeNumber
+    ) throws Exception{
+        int pageStart = pageParam.getPageStart();
+        int pageNum = pageParam.getPageNum();
+        int pageSize = pageParam.getPageSize();
+        List<Node> models = nodeService.getPageNotRelationShipNode(leftNodeNumber, leftNodeName, leftLabel, pageStart, pageSize);
+        int total = nodeService.getNotRelationShipNodeCount(leftNodeNumber, leftNodeName, leftLabel);
+
+//        PageResult pageResult = new PageResult(pageNum, pageSize, total, models);
+        if (models != null){
+            return Result.toClient("1", "有数据", total, models);
+        } return Result.toClient("0", "无数据");
+
+
+    }
+
     /***
      * 批量查询的节点数据
+     * http://localhost:8080/node/BatchQuery?label=age&nodeNumberList=c989ff1d2a6911ec9c3e00e04a68073f&nodeNumberList=c98a03622a6911ec9c3e00e04a68073f
      * @param label
      * @param nodeNumberList
      * @return
@@ -117,21 +169,6 @@ public class NodeController  extends JavaGetProperty{
 
         return nodeService.BatchQuery(label,nodeNumberList);
     }
-
-
-    /**
-     * #
-     * 获取某个标签的个数
-     * http://localhost:8080/node/getNodeCount?label=people
-     * @param
-     * @return
-     */
-//    @ApiOperation(value="根据标签名获取节点的个数", notes="根据标签名获取节点的个数")
-////    @ApiImplicitParam(name = "标签名", value = "节点的标签名", required = true, dataType = "String", paramType = "path")
-//    @RequestMapping(value = "getNodeCount", method = RequestMethod.POST)
-//    public int getNodeCount(String label) {
-//        return nodeService.getNodeCount(label);
-//    }
 
     /**
      * 添加单个节点
@@ -183,9 +220,31 @@ public class NodeController  extends JavaGetProperty{
     }
 
     /**
+     * http://localhost:8082/node/batchCreateRelationShip?leftLabel=me&leftNodeNumber=11,1236&rightLabel=me&rightNodeNumber=22,1537&type=朋友
+     * 批量创建节点关系
+     * @param leftLabel
+     * @param rightLabel
+     * @param leftNodeNumber
+     * @param rightNodeNumber
+     * @param type
+     * @return
+     */
+    @ApiOperation(value = "批量创建节点关系", tags = "批量创建节点关系",notes = "传多个节点的唯一标识，循环取出")
+    @RequestMapping(value = "batchCreateRelationShip", method = RequestMethod.POST)
+    public String batchCreateRelationShip(@ApiParam(name = "leftLabel", value = "起始节点的标签", required = true) @RequestParam(value = "leftLabel", required = true) String leftLabel,
+                                          @ApiParam(name = "leftNodeNumber", value = "起始节点的标识（可转入多个，逗号隔开）", required = true) @RequestParam(value = "leftNodeNumber", required = true) List<String> leftNodeNumber,
+                                          @ApiParam(name = "rightLabel", value = "被指向节点的标签", required = true) @RequestParam(value = "rightLabel", required = true) String rightLabel,
+                                          @ApiParam(name = "rightNodeNumber", value = "被指向节点的标识（可传入多个，逗号隔开）",required = true) @RequestParam(value = "rightNodeNumber", required = true) List<String> rightNodeNumber,
+                                          @ApiParam(name = "type", value = "节点间的关系名", required = true) @RequestParam(value = "type", required = true) String type) throws Exception{
+        int rel = nodeService.batchCreateRelationShip(leftLabel,leftNodeNumber, rightLabel,  rightNodeNumber, type) ;
+        String str = rel >0?"success":"error";
+        return str;
+    }
+
+    /**
      *
      * String fieldName,
-     * 修改节点的属性
+     * 批量修改节点的属性
      * @param leftLabel
      * @param nodeNumberList
      * @param
@@ -208,7 +267,7 @@ public class NodeController  extends JavaGetProperty{
         }
     }
 
-
+//http://localhost:8080/node/updateNode?leftNodeName=刘备2&leftGender=男1&leftAge=181&leftCover=1125.img&leftIntro=大耳贼1&leftCategory=皇帝1&leftAuthor=中山靖王之后1&leftOpusContent=桃园三兄弟大哥1&leftLabel=me&leftNodeNumber=118&leftTexture=红红1&leftFunctionCategory=哈哈1&leftParentAge=拉拉1
     @ApiOperation(value="修改节点的属性", tags = {"修改节点的属性"},notes="修改节点的属性，条件是label,nodeId")
     @RequestMapping(value = "updateNode", method = RequestMethod.POST)
     public String updateNode(Node node) {
@@ -224,13 +283,13 @@ public class NodeController  extends JavaGetProperty{
 
     /**
      * 修改节点之间的关系
-     * http://localhost:8080/node/updateNodeRelationship?leftLabel=me&leftNodeNumber=1236&rightLabel=me&rightNodeNumber=1537&leftType=兄弟&righType=塑料姐妹情
+     * http://localhost:8080/node/updateNodeRelationship?leftLabel=me&leftNodeNumber=1236&rightLabel=me&rightNodeNumber=1537&leftType=兄弟&rightType=塑料姐妹情
      * @param leftLabel
      * @param leftNodeNumber
      * @param rightLabel
      * @param rightNodeNumber
      * @param leftType
-     * @param righType
+     * @param rightType
      * @return
      */
     @ApiOperation(value="修改节点之间的关系",tags = {"修改节点之间的关系"}, notes="修改节点之间的关系，type是要删除的关系，type2是要添加的关系")
@@ -241,9 +300,9 @@ public class NodeController  extends JavaGetProperty{
                                          @ApiParam(name="rightLabel",value="第二个标签名称",required=true) String rightLabel,
                                          @ApiParam(name="rightNodeNumber",value="第二个标签ID",required=true) String  rightNodeNumber,
                                          @ApiParam(name="leftType",value="原来关系",required=true) String leftType,
-                                         @ApiParam(name="righType",value="新关系",required=true) String righType){
+                                         @ApiParam(name="righType",value="新关系",required=true) String rightType){
 
-        int n= nodeService.updateNodeRelationshipOne(leftLabel,leftNodeNumber,leftType,rightLabel,rightNodeNumber,righType);
+        int n= nodeService.updateNodeRelationshipOne(leftLabel,leftNodeNumber,leftType,rightLabel,rightNodeNumber,rightType);
             if(n>0){
                 return "修改成功";
             }else {
@@ -268,8 +327,7 @@ public class NodeController  extends JavaGetProperty{
 
     /**
      * 删除节点的某一个关系
-     * http://localhost:8080/node/removeNodetoNodeOneRelationship?leftLabel=me&leftNodeNumber=1236&rightLabel=me&rightNodeNumber=1537&leftType=塑料姐妹情
-     * @param leftLabel
+     * http://localhost:8080/node/removeNodetoNodeOneRelationship?leftLabel=me&leftNodeNumber=118&rightLabel=me&rightNodeNumber=1537&leftType=塑料姐妹情     * @param leftLabel
      * @param leftNodeNumber
      * @param rightLabel
      * @param rightNodeNumber
@@ -328,12 +386,6 @@ public class NodeController  extends JavaGetProperty{
 
     }
 
-//    @ApiOperation(value="删除节点",tags = {"删除节点"}, notes="删除节点,条件是label 和 nodeId")
-//    @RequestMapping(value = "getNodeId", method = RequestMethod.POST)
-//    public List<String> getNodeId(@ApiParam(name="leftLabel",value="标签名称",required=true) String leftLabel) {
-//        return  nodeService.getNodeIdList(leftLabel);
-//    }
-
     /**
      * 批量删除(删除多个节点，多个关系)
      * http://localhost:8080/node/removeMultipleNodesAndMultipleRelationship?leftLabel=me&leftNodeNumber=18&leftLabel=age&leftNodeNumber=18
@@ -341,31 +393,33 @@ public class NodeController  extends JavaGetProperty{
      * @param nodeNumber
      * @return
      */
-//    @ApiOperation(value="批量删除(删除多个节点，多个关系)",tags = {"批量删除(删除多个节点，多个关系)"}, notes="删除多个节点，多个关系")
-//    @RequestMapping(value = "removeMultipleNodesAndMultipleRelationship", method = RequestMethod.POST)
-//    @Transactional(propagation = Propagation.REQUIRED,isolation = Isolation.DEFAULT,timeout=36000,rollbackFor=Exception.class)
-//    public String removeMultipleNodesAndMultipleRelationship(@ApiParam(name="leftLabel",value="标签名称",required=true) @RequestParam List<String> label,
-//                                                             @ApiParam(name="leftNodeNumber",value="标签ID",required=true) @RequestParam List<String> nodeNumber) {
-//        for(int i=0;i<label.size();i++) {
-//            List<String> listId = nodeService.getNodeIdList(label.get(i));
-//            for (int j = 0; j < listId.size(); j++) {
-//                for (int z = 0; z < nodeNumber.size(); z++) {
-//                    if (listId.get(j).equals(nodeNumber.get(z))) {
-//                        int n = nodeService.removeNodeAllRelationship(label.get(i), nodeNumber);
-//                        if (n > 0) {
-//                            int m = nodeService.removeNode(label.get(i), nodeNumber);
-//                            return Result.toClient("200", "删除成功");
-//                        } else {
-//                            return Result.toClient("400", "删除失败");
-//                        }
-//                    }
-//                    continue;
-//                }
-//            }
-//        }
-//        System.out.println("leftLabel"+label);
-//        System.out.println("leftNodeNumber"+nodeNumber);
-//        return "请联系管理员";
-//    }
+    @ApiOperation(value="批量删除(删除多个节点，多个关系)",tags = {"批量删除(删除多个节点，多个关系)"}, notes="删除多个节点，多个关系")
+    @RequestMapping(value = "removeMultipleNodesAndMultipleRelationship", method = RequestMethod.POST)
+    @Transactional(propagation = Propagation.REQUIRED,isolation = Isolation.DEFAULT,timeout=36000,rollbackFor=Exception.class)
+    public String removeMultipleNodesAndMultipleRelationship(@ApiParam(name="leftLabel",value="标签名称",required=true) @RequestParam List<String> label,
+                                                             @ApiParam(name="leftNodeNumber",value="标签ID",required=true) @RequestParam List<String> nodeNumber) {
+        for(int i=0;i<label.size();i++) {
+            List<String> listId = nodeService.getNodeIdList(label.get(i));
+            for (int j = 0; j < listId.size(); j++) {
+                for (int z = 0; z < nodeNumber.size(); z++) {
+                    if (listId.get(j).equals(nodeNumber.get(z))) {
+                        int n = nodeService.removeNodeAllRelationship(label.get(i), nodeNumber);
+                        if (n > 0) {
+                            int m = nodeService.removeNode(label.get(i), nodeNumber);
+                            return Result.toClient("200", "删除成功");
+                        } else {
+                            return Result.toClient("400", "删除失败");
+                        }
+                    }
+                    continue;
+                }
+            }
+        }
+        System.out.println("leftLabel"+label);
+        System.out.println("leftNodeNumber"+nodeNumber);
+        return "请联系管理员";
+    }
+
+
 
 }

@@ -19,17 +19,6 @@ public class NodeServiceImpl implements NodeService {
         return nodeMapper.getNodeOne(node);
     }
 
-//    @Override
-//    public List<Record> getNodeAndRelationshipList(String leftLabel, String leftNodeNumber) {
-//        return nodeMapper.getNodeAndRelationshipList(leftLabel,leftNodeNumber);
-//    }
-
-//    @Override
-//    public List<Record> getNodeListByRelationship(String leftLabel, String leftNodeNumber, String leftType) {
-//        return nodeMapper.getNodeListByRelationship( leftLabel,  leftNodeNumber,  leftType);
-//    }
-
-
 
     @Override
     public List<String> getNodeIdList(String leftLabel) {
@@ -97,12 +86,42 @@ public class NodeServiceImpl implements NodeService {
     }
 
     @Override
-    public int getNodeCount(String leftLabel) {
-        return nodeMapper.getNodeCount(leftLabel);
+    public int updateNodeRelationshipOne(String leftLabel, String leftNodeNumber, String leftType, String rightLabel, String rightNodeNumber, String righType) {
+        return nodeMapper.updateNodeRelationshipOne( leftLabel,  leftNodeNumber,  leftType,  rightLabel,  rightNodeNumber,  righType);
     }
 
     @Override
-    public int updateNodeRelationshipOne(String leftLabel, String leftNodeNumber, String leftType, String rightLabel, String rightNodeNumber, String righType) {
-        return nodeMapper.updateNodeRelationshipOne( leftLabel,  leftNodeNumber,  leftType,  rightLabel,  rightNodeNumber,  righType);
+    public int getAllNotNodeNum() {
+        return nodeMapper.getAllNotNodeNum();
+    }
+
+    @Override
+    public int getNodeNodeRelationshiCount(String label, String nodeNumber) {
+        return nodeMapper.getNodeNodeRelationshiCount(label,nodeNumber);
+    }
+
+    @Override
+    public List<Node> getDepthOfQueryNode(String leftLabel, Integer num, String leftNodeNumber, int pageNum, int pageSize) {
+        return nodeMapper.getDepthOfQueryNode(leftLabel,num,leftNodeNumber,pageNum,pageSize);
+    }
+
+    @Override
+    public int getDepthOfQueryNodeCount(String leftLabel, Integer num, String leftNodeNumber) {
+        return nodeMapper.getDepthOfQueryNodeCount(leftLabel,num,leftNodeNumber);
+    }
+
+    @Override
+    public List<Node> getPageNotRelationShipNode(String leftNodeNumber, String leftNodeName, String leftLabel, int pageNum, int pageSize) {
+        return nodeMapper.getPageNotRelationShipNode(leftNodeNumber,leftNodeName,leftLabel,pageNum,pageSize);
+    }
+
+    @Override
+    public int getNotRelationShipNodeCount(String leftNodeNumber, String leftNodeName, String leftLabel) {
+        return nodeMapper.getNotRelationShipNodeCount(leftNodeNumber,leftNodeName,leftLabel);
+    }
+
+    @Override
+    public int batchCreateRelationShip(String leftLabel, List<String> leftNodeNumber, String rightLabel, List<String> rightNodeNumber, String type) {
+        return nodeMapper.batchCreateRelationShip(leftLabel,leftNodeNumber,rightLabel,rightNodeNumber,type);
     }
 }
