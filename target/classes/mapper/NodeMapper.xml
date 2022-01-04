@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org/DTD Mapper 3.0" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ay.kg.mapper.NodeMapper">
+
+    <resultMap id="neo4jMap" type="com.ay.kg.model.Node">
+        <id property="nodeId" column="nodeId"/>
+        <result property="leftNodeName" column="node_name"/>
+        <result property="leftNodeNumber" column="node_number"/>
+        <result property="leftGender" column="gender"/>
+        <result property="leftAge" column="age"/>
+        <result property="leftCover" column="cover"/>
+        <result property="leftIntro" column="intro"/>
+        <result property="leftOpusContent" column="opus_content"/>
+        <result property="leftCategory" column="category"/>
+        <result property="leftAuthor" column="author"/>
+        <result property="leftFunctionCategory" column="function_category"/>
+        <result property="leftTexture" column="texture"/>
+        <result property="leftParentAge" column="parent_age"/>
+        <collection property="nodes" ofType="com.ay.kg.model.Node">
+            <id property="nodeId" column="nodeId1"/>
+            <result property="rightNodeName" column="node_name"/>
+            <result property="rightNodeNumber" column="node_number"/>
+            <result property="rightGender" column="gender"/>
+            <result property="rightAge" column="age"/>
+            <result property="rightCover" column="cover"/>
+            <result property="rightIntro" column="intro"/>
+            <result property="rightOpusContent" column="opus_content"/>
+            <result property="rightCategory" column="category"/>
+            <result property="rightAuthor" column="author"/>
+            <result property="rightFunctionCategory" column="function_category"/>
+            <result property="rightTexture" column="texture"/>
+            <result property="rightParentAge" column="parent_age"/>
+        </collection>
+    </resultMap>
+
+    <insert id="addNode" parameterType="com.ay.kg.model.Node">
+        MATCH(n:${leftLabel}{node_name:'${leftNodeName}',gender:'${leftGender}',age:'${leftAge}',cover:'${leftCover}',intro:'${leftIntro}',
+        category:'${leftCategory}',author:'${leftAuthor}',opus_content:'${leftOpusContent}',node_number:'${leftNodeNumber}',texture:'${leftTexture}',
+        function_category:'${leftFunctionCategory}',parent_age:'${leftParentAge}'})
+    </insert>
+
+    <insert id="createNodeRelationship" parameterType="String">
+        MATCH (e),(cc) where labels(e)=['${leftLabel}'] and labels(cc)=['${rightLabel}'] and e.node_number='${leftNodeNumber}' and cc.node_number='${rightNodeNumber}'
+        CREATE (e)-[r:${leftType}]->(cc)
+    </insert>
+
+    <insert id="createNewNodeRelationship" parameterType="com.ay.kg.model.Node">
+        MATCH (n:${leftLabel}{node_name:'${leftNodeName}',gender:'${leftGender}',age:'${leftAge}',cover:'${leftCover}',intro:'${leftIntro}',
+        category:'${leftCategory}',author:'${leftAuthor}',opus_content:'${leftOpusContent}',node_number:'${leftNodeNumber}',texture:'${leftTexture}',
+        function_category:'${leftFunctionCategory}',parent_age:'${leftParentAge}'})
+
+        -[r:${leftType}]->
+
+        (m:${rightLabel}{node_name:'${rightNodeName}',gender:'${rightGender}',age:'${rightAge}',cover:'${rightCover}',intro:'${rightIntro}',
+        category:'${rightCategory}',author:'${rightAuthor}',opus_content:'${rightOpusContent}',node_number:'${rightNodeNumber}',texture:'${rightTexture}',
+        function_category:'${rightFunctionCategory}',parent_age:'${rightParentAge}'})
+    </insert>
+
+    <update id="BatchModification" >
+        match(n) where labels(n)=['${leftLabel}'] and n.node_number in
+        <foreach collection="nodeNumberList" item="item" open="[" separator="," close="]">
+            '${item}'
+        </foreach>
+        set
+        n.function_category='${fieldValue}'
+        return n
+    </update>
+
+    <update id="updateNode" parameterType="com.ay.kg.model.Node">
+        match(n) where labels(n)=['${leftLabel}'] and n.node_number='${leftNodeNumber}' set
+        n.node_name='${leftNodeName}',n.gender='${leftGender}',n.age='${leftAge}',n.cover='${leftCover}',n.intro='${leftIntro}',
+        n.category='${leftCategory}',n.author='${leftAuthor}',n.opus_content='${leftOpusContent}',n.texture='${leftTexture}',
+        n.function_category='${leftFunctionCategory}',n.parent_age='${leftParentAge}' return n
+    </update>
+    <update id="updateNodeRelationshipOne">
+        MATCH (n)-[r:${leftType}]-(m)
+        WHERE  labels(n)=['${leftLabel}'] and  labels(m)=['${rightLabel}'] and n.node_number='${leftNodeNumber}' and m.node_number='${rightNodeNumber}'
+        CREATE (n)-[r2:${righType}]->(m)
+        DELETE r
+
+    </update>
+
+    <delete id="removeNodeAllRelationship" >
+        MATCH (n)-[r]-(m) where labels(n)=['${leftLabel}']   and n.node_number in
+        <foreach item="item"  collection="leftNodeNumber" index="index" open="[" separator="," close="]">
+            '${item}'
+        </foreach>
+        delete r
+    </delete>
+
+    <delete id="removeNodetoNodeOneRelationship" parameterType="com.ay.kg.model.Node">
+        MATCH (n)-[r:${leftType}]-(m) where labels(n)=['${leftLabel}'] and labels(m)=['${rightLabel}']
+        and n.node_number='${leftNodeNumber}'AND m.node_number='${rightNodeNumber}'  delete r
+    </delete>
+
+    <delete id="removeNodetoNodeAllRelationship" parameterType="com.ay.kg.model.Node">
+        MATCH (n)-[r]-(m) where labels(n)=['${leftLabel}'] and n.node_number='${leftNodeNumber}'  and labels(m)=['${rightLabel}']  delete r
+    </delete>
+
+    <delete id="removeNode" >
+        MATCH (n) where labels(n)=['${leftLabel}'] and n.node_number in
+        <foreach item="item"  collection="leftNodeNumber" open="[" separator="," close="]">
+            '${item}'
+        </foreach>
+        delete n
+    </delete>
+
+    <select id="getNodeOne" resultType="com.ay.kg.model.Node" parameterType="com.ay.kg.model.Node">
+        MATCH (n) where labels(n)=['${leftLabel}']
+
+        <if test="leftNodeName!=null and leftNodeName!=''">
+            and n.node_name='${leftNodeName}'
+        </if>
+        <if test="leftAge!=null and leftAge!=''">
+            and n.age='${leftAge}'
+        </if>
+        <if test="leftIntro!=null and leftIntro!=''">
+            and n.intro='${leftIntro}'
+        </if>
+        <if test="leftAuthor!=null and leftAuthor!=''">
+            and n.author='${leftAuthor}'
+        </if>
+        <if test="leftCategory!=null and leftCategory!=''">
+            and n.category='${leftCategory}'
+        </if>
+        <if test="leftTexture!=null and leftTexture!=''">
+            and n.texture='${leftTexture}'
+        </if>
+        <if test="leftFunctionCategory!=null and leftFunctionCategory!=''">
+            and n.function_category='${leftFunctionCategory}'
+        </if>
+        <if test="leftNodeNumber!=null and leftNodeNumber!=''">
+            and n.node_number='${leftNodeNumber}'
+        </if>
+
+        <if test="leftParentAge!=null and leftParentAge!=''">
+            and n.parent_age ='${leftParentAge}'
+        </if>
+
+        RETURN n.node_name as leftNodeName,n.node_number as leftNodeNumber,n.gender as leftGender,n.age as leftAge ,n.cover as leftCover ,n.author as leftAuthor
+        ,n.intro as leftIntro ,n.category as leftCategory ,n.opus_content as leftOpusContent, n.texture as leftTexture,n.function_category as leftFunctionCategory
+        ,n.parent_age as leftParentAge
+        ,rand() as r
+        ORDER BY r limit 5
+    </select>
+
+    <select id="getNodeIdList" resultType="String">
+        MATCH (n) where labels(n)=['${leftLabel}'] RETURN n.node_number
+    </select>
+
+    <select id="getNodeAndRelationshipList" resultType="java.util.Map">
+        MATCH (n)-[sp]-(m) where labels(n)=['${leftLabel}'] and n.node_number='${leftNodeNumber}' RETURN
+        labels(n)[0] as labelOneself,
+        n,
+        type(sp) as type,
+        labels(m)[0] as label, m,
+        rand() as r Order BY r LIMIT ${num}
+
+    </select>
+    <select id="BatchQuery" resultType="com.ay.kg.model.Node">
+        MATCH (n) where labels(n)=['${leftLabel}'] and n.node_number in
+        <foreach item="item"  collection="nodeNumberList" open="[" separator="," close="]">
+            '${item}'
+        </foreach>
+        RETURN n.node_name as leftNodeName,n.node_number as leftNodeNumber,n.gender as leftGender,n.age as leftAge ,n.cover as leftCover ,n.author as leftAuthor
+        ,n.intro as leftIntro ,n.category as leftCategory ,n.opus_content as leftOpusContent, n.texture as leftTexture,n.function_category as leftFunctionCategory
+        ,n.parent_age as leftParentAge
+    </select>
+    <select id="getNodeInformation" resultType="java.util.Map">
+        MATCH (n) where labels(n)=['${leftLabel}'] and n.node_number='${leftNodeNumber}' return labels(n)[0] as labelOneself,n,labels(n)[0] as label,n as m
+    </select>
+
+
+
+    <select id="getAllNotNodeNum" resultType="java.lang.Integer">
+        match()-[r]->() return count(r)
+    </select>
+
+    <!-- 当前节点有几条关系 -->
+    <select id="getNodeNodeRelationshiCount" resultType="java.lang.Integer" parameterType="string">
+        MATCH (n)-[r]-(m) where labels(n)=['${label}'] and n.node_number='${nodeNumber}' RETURN count(r)
+    </select>
+
+    <!-- 节点的深度查询 -->
+    <select id="getDepthOfQueryNode" resultMap="neo4jMap">
+        match p=(m:${leftLabel})-[r*1..${num}]-(n) where m.node_number='${leftNodeNumber}' return
+        id(startnode(r[-1])) as relation_start, id(endnode(r[-1])) as relation_end, type(r[-1]) as relation_type, id(r[-1]) as relation_id,
+        id(n) as node_id, n.node_name as node_name,n.node_number as node_number,n.gender as gender,n.age as age ,n.cover as cover ,n.author as author
+        ,n.intro as intro ,n.category as category ,n.opus_content as opus_content, n.texture as texture,n.function_category as function_category
+        ,n.parent_age as parent_age, n.node_no as node_no, n.audit_status as audit_status, n.source_unit as source_unit
+        <if test="pageNum >= 0 and pageSize > 0">
+            skip ${pageNum} limit ${pageSize}
+        </if>
+    </select>
+    <!-- 节点深度查询的节点数量 -->
+    <select id="getDepthOfQueryNodeCount" resultType="java.lang.Integer">
+        match p=(m:${leftLabel})-[r*1..${num}]-(n) where m.node_number='${leftNodeNumber}' return count(p)
+    </select>
+
+    <!-- 查询不存在关系的节点信息 -->
+    <select id="getPageNotRelationShipNode" resultMap="neo4jMap">
+        match(n) where not(n)-[]-()
+        <if test="leftLabel != null and leftLabel != ''">
+            and labels(n)=['${leftLabel}']
+        </if>
+        <if test="leftNodeName != null and leftNodeName != ''">
+            and n.node_name=~'.*${leftNodeName}.*'
+        </if>
+        <if test="leftNodeNumber != null and leftNodeNumber != ''">
+            and n.node_number='${leftNodeNumber}'
+        </if>
+        RETURN
+        id(n) as node_id, n.node_name as node_name,n.node_number as node_number,n.gender as gender,n.age as age ,n.cover as cover ,n.author as author
+        ,n.intro as intro ,n.category as category ,n.opus_content as opus_content, n.texture as texture,n.function_category as function_category
+        ,n.parent_age as parent_age, n.node_no as node_no, n.audit_status as audit_status, n.source_unit as source_unit
+        <if test="pageNum >= 0 and pageSize > 0">
+            skip ${pageNum} limit ${pageSize}
+        </if>
+    </select>
+    <!-- 查询不存在关系的节点数量 -->
+    <select id="getNotRelationShipNodeCount" resultType="java.lang.Integer" parameterType="java.lang.String">
+        match(n) where not(n)-[]-()
+        <if test="leftLabel != null and leftLabel != ''">
+            and labels(n)=['${leftLabel}']
+        </if>
+        <if test="leftNodeName != null and leftNodeName != ''">
+            and n.node_name=~'.*${leftNodeName}.*'
+        </if>
+        <if test="leftNodeNumber != null and leftNodeNumber != ''">
+            and n.node_number='${leftNodeNumber}'
+        </if>
+        RETURN count(n)
+    </select>
+    <insert id="batchCreateRelationShip">
+        match(a),(b) where labels(a) = ['${leftLabel}']
+        and labels(b) = labels(b) = ['${rightLabel}']
+        and a.node_number in
+        <foreach item="item"  collection="leftNodeNumber" open="[" separator="," close="]">
+            '${item}'
+        </foreach>
+        and b.node_number in
+        <foreach item="item"  collection="rightNodeNumber" open="[" separator="," close="]">
+            '${item}'
+        </foreach>
+        create (a)-[r:`${type}`]->(b)
+    </insert>
+
+    <!--批量导入动态的节点关系-->
+    <insert id="importCsv">
+        load csv with headers from "file:///${fileName}.csv" as line
+       match(from:${leftLable}{${leftKey}:line.leftValue})
+       match(to:${rightLable}{${rightKye}:line.rightValue})
+       with from ,to ,line
+       call apoc.create.relationship(from,line.relationship,{},to) yield rel
+       return count(rel)
+    </insert>
+
+</mapper>

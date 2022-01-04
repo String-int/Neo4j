@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{common/layoutlist}">
+<head lang="en">
+    <title langkey="artword-name"></title>
+    <style type="text/css">
+        .mask {
+            width: 100%;
+            height: 1200px;
+            background: #212529;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 100;
+            opacity: 0.6;
+            display: none;
+        }
+
+        .artContent {
+            height: 286px;
+            width: 427px;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translateX(-50%) translateY(-50%);
+            z-index: 1000;
+            overflow: hidden;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="app" class="dp-wrapper" layout:fragment="content">
+    <template>
+        <nav class="navbar navbar-default navbar-fixed-top">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-7 col-sm-6">
+                        <div class="dp-form-brand">
+                            <i class="iconfont icon-kanban font-20"></i>
+                            <span langkey="artwork-title"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-5 col-sm-6">
+                        <div class="pull-right dp-padding-right-50">
+                            <!-- Single button -->
+
+                            <!-- <div class="btn-group" role="group"><button type="button" class="btn btn-outline-blue navbar-btn btn-sm" @click="remove">删除</button></div>-->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+        <!--        <el-container class="dp-m-t-20" style="height: 100%;">-->
+        <!--            <el-aside style="margin-top: 20px;width: 200px;height: 100%;">-->
+        <!--                <p>-->
+        <!--                    <el-button style="width: 200px;" @click="getAll">所有藏品</el-button>-->
+        <!--                </p>-->
+        <!--                &lt;!&ndash;左边分类 start&ndash;&gt;-->
+        <!--                <el-menu>-->
+        <!--                    <template v-for="(submenu, index) in productCategores" :key="submenu.value">-->
+        <!--                        <el-menu-item-group>-->
+        <!--                                <el-menu-item :index="(submenu.value)+'-'+(submenu.value)"-->
+        <!--                                              @click="handleSelect(submenu)">-->
+        <!--                                    <i class="el-icon-tickets"></i>{{submenu.category}}({{submenu.num}})-->
+        <!--                                </el-menu-item>-->
+        <!--                        </el-menu-item-group>-->
+        <!--                    </template>-->
+        <!--                </el-menu>-->
+        <!--                &lt;!&ndash;左边分类&ndash;&gt;-->
+        <!--            </el-aside>-->
+        <!--            <el-container>-->
+        <el-main>
+            <div class="dp-card table-responsive">
+                <div>
+                    <div class="col-sm-6">
+                        <el-button size="small" icon="el-icon-plus" @click="add">{{langLable.add}}</el-button>
+                        <el-button size="small">
+                            <span @click="batchDelete">批量删除</span>
+                        </el-button>
+                        <el-button size="small" id="listForm">
+                            <label style="height: 8px" id="realBtn">
+                                <input type="file" id="file" name="file" value=""
+                                       style="left:-9999px;position:absolute;">
+                                <span>导入藏品</span>
+                            </label>
+                        </el-button>
+                        <el-button size="small">
+                            <a @click="exportart" id="exportartwork" href="artworks/artworkExport">导出藏品</a>
+                        </el-button>
+                        <el-dropdown :hide-on-click="false">
+                                  <span class="el-dropdown-link">
+                                    字段扩展<i class="el-icon-arrow-down el-icon--right"></i>
+                                  </span>
+                            <el-dropdown-menu slot="dropdown">
+                                <el-dropdown-item>
+                                    <el-checkbox @change="authorChange" label="作者"></el-checkbox>
+                                </el-dropdown-item>
+                                <el-dropdown-item>
+                                    <el-checkbox @change="sourceChange" label="来源"></el-checkbox>
+                                </el-dropdown-item>
+                                <el-dropdown-item>
+                                    <el-checkbox @change="weightChange" label="重量"></el-checkbox>
+                                </el-dropdown-item>
+                            </el-dropdown-menu>
+                        </el-dropdown>
+
+
+                        <!-- <el-button>
+                             <label>
+                                 <a href="/artworks/pdfExport">打印pdf</a>
+                             </label>
+                         </el-button>-->
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="pull-right form-inline dp-margin-bottom-10">
+                            <div class="form-group">
+                                <!--                                        <form  action="#" autocomplete="on" method="get">-->
+                                <input autocomplete="on" type="text" class="form-control"
+                                       langphkey="artwork-registrationno"
+                                       v-model="queryItem.registrationno">
+                                <input type="text" class="form-control" langphkey="artwork-name"
+                                       v-model="queryItem.name">
+                                <input type="text" class="form-control" placeholder="藏品类别"
+                                       v-model="queryItem.categoryno">
+                                <input type="text" class="form-control" placeholder="文物级别"
+                                       v-model="queryItem.grade">
+                                <button type="button" class="btn btn-default" @click="search">
+                                    <i class="fa fa-search"></i>
+                                </button>
+                                <button type="button" class="btn btn-default" @click="reset">
+                                    重置
+                                </button>
+                                <!--                                        </form>-->
+                            </div>
+                            <!--                                    <div class="form-group">-->
+                            <!--                                        <button type="button" class="btn btn-default" data-toggle="collapse"-->
+                            <!--                                                href="#dpQuery"-->
+                            <!--                                                aria-expanded="false" aria-controls="dpQuery">-->
+                            <!--                                            <i class="fa fa-filter"></i>-->
+                            <!--                                        </button>-->
+                            <!--                                    </div>-->
+
+                        </div>
+                    </div>
+                    <!--头部查询 start-->
+                    <!--                        <div>-->
+                    <!--                            <div class="col-sm-12 collapse" id="dpQuery">-->
+                    <!--                                <el-card shadow="never">-->
+                    <!--                                    <el-row>-->
+                    <!--                                        <el-col :span="24">-->
+                    <!--                                            <el-form :model="queryItem" label-width="150px">-->
+                    <!--                                                <el-col :span="6">-->
+                    <!--                                                    <el-form-item label="藏品类别" prop="categoryno" size="small">-->
+                    <!--                                                        <el-input v-model="queryItem.categoryno" placeholder="藏品类别"/>-->
+                    <!--                                                    </el-form-item>-->
+                    <!--                                                </el-col>-->
+                    <!--                                                <el-col :span="6">-->
+                    <!--                                                    <el-form-item label="文物级别" prop="grade" size="small">-->
+                    <!--                                                        <el-input v-model="queryItem.grade" placeholder="文物级别"/>-->
+                    <!--                                                    </el-form-item>-->
+                    <!--                                                </el-col>-->
+                    <!--                                                <el-col :span="24">-->
+                    <!--                                                    <div class="text-center">-->
+                    <!--                                                        <el-button size="small" type="info" @click="reset">重置-->
+                    <!--                                                        </el-button>-->
+                    <!--                                                        <el-button size="small" type="primary" @click="query">查询-->
+                    <!--                                                        </el-button>-->
+                    <!--                                                    </div>-->
+                    <!--                                                </el-col>-->
+                    <!--                                            </el-form>-->
+                    <!--                                        </el-col>-->
+                    <!--                                    </el-row>-->
+                    <!--                                </el-card>-->
+                    <!--                            </div>-->
+                    <!--                        </div>-->
+                    <!--头部查询 end-->
+
+                    <table class="table table-hover table-list">
+                        <!--数据表格列名 start-->
+                        <thead>
+                        <tr>
+                            <th width="2%">#</th>
+                            <th width="2%">
+                                <div class="dp-margin-bottom-0 checkbox checkbox-success">
+                                    <input type='checkbox' v-model='checked' @click='checkedAll'>
+                                    <label></label>
+                                </div>
+                            </th>
+                            <th class="text-center" width="10%" langkey="artwork-img"></th>
+                            <th class="text-center" width="10%" langkey="artwork-registrationno"></th>
+                            <th class="text-center" width="10%" langkey="artwork-name"></th>
+                            <th class="text-center" width="10%" langkey="artwork-age"></th>
+                            <th class="text-center" width="5%" langkey="artwork-categoryno"></th>
+                            <th class="text-center" width="5%" langkey="artwork-grade"></th>
+                            <th class="text-center" width="5%" langkey="artwork-complete"></th>
+                            <th class="text-center" width="5%" langkey="artwork-size"></th>
+                            <th v-show="author" class="text-center" width="5%" langkey="artwork-author"></th>
+                            <th v-show="source" class="text-center" width="5%" langkey="artwork-source"></th>
+                            <th v-show="weight" class="text-center" width="5%" langkey="artwork-weight"></th>
+                            <th class="text-center" width="20%" langkey="common-action"></th>
+                        </tr>
+                        </thead>
+                        <!--数据表格列名 end-->
+                        <!--数据表格数据渲染 start-->
+                        <tbody>
+                        <tr v-for="(row, index) in datatable" :key="row.artworkUuid">
+                            <th width="2%">{{index+1}}</th>
+                            <td width="2%">
+                                <div class="dp-margin-bottom-0 checkbox checkbox-success">
+                                    <input type='checkbox' v-model="checkList" :value="row.id"/>
+                                    <label></label>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <img @click="view(row)" :src="row.thumbnail" class="rounded-circle"
+                                     alt="Cinque Terre" width="50px"
+                                     height="50px" :onerror="errorConver">
+
+                            </td>
+                            <td class="text-center">
+                                <span>{{row.registrationno}}</span>
+                            </td>
+                            <td class="text-center">
+                                <span>{{row.name}}</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="label label-primary">{{row.age}}</span>
+                            </td>
+                            <td class="text-center">
+                                {{row.category}}
+                            </td>
+                            <!--<td class="text-center">
+                                <span v-if="row.productNumber>row.warnNumber" class="label label-primary">{{row.productNumber}}</span>
+                                <span v-else class="label label-danger" langkey="product-warn-number">库存警告:{{row.productNumber}}</span>
+                            </td>-->
+                            <td class="text-center">
+                                {{row.grade}}
+                            </td>
+                            <td class="text-center">
+                                {{row.complete}}
+                            </td>
+                            <td class="text-center">
+                                {{row.size}}
+                            </td>
+
+                            <td v-show="author" class="text-center">
+                                {{row.author}}
+                            </td>
+                            <td v-show="source" class="text-center">
+                                {{row.sourcememo}}
+                            </td>
+                            <td v-show="weight" class="text-center">
+                                {{row.weight}}
+                            </td>
+                            <th class="text-center">
+                                <!-- <div class="btn-group" role="group">
+                                     <button type="button" class="btn btn-outline-blue navbar-btn btn-sm" @click="addFile(row)"  v-text="e360lang['common-picture-upload']">
+                                     </button>
+                                 </div>-->
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-outline-blue navbar-btn btn-sm"
+                                            @click="edit(row)" v-text="e360lang['common-edit']">
+                                    </button>
+                                </div>
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-outline-blue navbar-btn btn-sm"
+                                            @click="remove(row)" v-text="e360lang['common-remove']">
+                                    </button>
+                                </div>
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-outline-blue navbar-btn btn-sm"
+                                            @click="imageList(row)" v-text="e360lang['common-attachment-list']">
+                                    </button>
+                                </div>
+                            </th>
+                        </tr>
+                        <tr v-show="datatable.length==0">
+                            <td colspan="11" class="text-center" langkey="common-no-data"></td>
+                        </tr>
+                        </tbody>
+                        <!--数据表格渲染 end-->
+                    </table>
+                    <div>
+                        <div class="col-sm-6"></div>
+                        <div class="col-sm-6">
+                            <div id="pagenation" class="pagination pull-right no-margin"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </el-main>
+        <!-- </el-container>
+         </el-container>-->
+        <!--遮罩层-->
+        <div id="maskContent" class="mask">
+
+        </div>
+        <!--要显示放大的内容-->
+        <div style="height: 500px;width: 600px" class="artContent">
+            <img style="width: 600px;height: 500px" :src="img">
+        </div>
+    </template>
+    <script type="text/javascript">
+
+        var vm = new Vue({
+            el: '#app',
+            data: {
+                peopleList:[],
+                queryItem: {
+                    pageIndex: 1,
+                    pageSize: 10,
+                },
+            },
+            methods: {
+
+            },
+            watch: {
+
+            },
+            mounted() {
+			    dolphin.get('getPeolpeAll', {}, function (result) {
+			        vm.peopleList = result.data
+			        console.log(result.data)
+                });
+		    },
+            created: function () {
+
+
+            }
+        });
+
+    </script>
+</div>
+</body>
+</html>
