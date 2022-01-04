@@ -46,6 +46,8 @@ public class Node {
 
     public String[] str;
 
+    private int num;
+
     public String[] getStr() {
         return str;
     }

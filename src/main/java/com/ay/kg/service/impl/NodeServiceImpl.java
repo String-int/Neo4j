@@ -1,12 +1,14 @@
 package com.ay.kg.service.impl;
 
 import com.ay.kg.mapper.NodeMapper;
+import com.ay.kg.model.ApocInfo;
 import com.ay.kg.model.Node;
 import com.ay.kg.service.NodeService;
-import org.neo4j.driver.v1.Record;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class NodeServiceImpl implements NodeService {
@@ -26,12 +28,12 @@ public class NodeServiceImpl implements NodeService {
     }
 
     @Override
-    public List<Record> getNodeAndRelationshipList(String leftLabel, String leftNodeNumber, Long num) {
+    public List<Map> getNodeAndRelationshipList(String leftLabel, String leftNodeNumber, Long num) {
         return nodeMapper.getNodeAndRelationshipList( leftLabel,  leftNodeNumber,  num);
     }
 
     @Override
-    public List<Record> getNodeInformation(String leftLabel, String leftNodeNumber) {
+    public List<Map> getNodeInformation(String leftLabel, String leftNodeNumber) {
         return nodeMapper.getNodeInformation( leftLabel, leftNodeNumber);
     }
 
@@ -123,5 +125,10 @@ public class NodeServiceImpl implements NodeService {
     @Override
     public int batchCreateRelationShip(String leftLabel, List<String> leftNodeNumber, String rightLabel, List<String> rightNodeNumber, String type) {
         return nodeMapper.batchCreateRelationShip(leftLabel,leftNodeNumber,rightLabel,rightNodeNumber,type);
+    }
+
+    @Override
+    public Integer importCsv(ApocInfo apocInfo) {
+        return nodeMapper.importCsv(apocInfo);
     }
 }

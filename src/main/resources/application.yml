@@ -14,7 +14,7 @@ spring:
     driver-class-name: org.neo4j.jdbc.http.HttpDriver
     name: neo4j
     password: anyi666
-#    url: jdbc:neo4j:http://localhost:7474
+    #    url: jdbc:neo4j:http://localhost:7474
     url: jdbc:neo4j:http://localhost:11006
 #  datasource:
 #    driver-class-name: com.mysql.cj.jdbc.Driver
@@ -23,7 +23,7 @@ spring:
 #    #url: jdbc:mysql://106.54.67.119:3306/artmember?characterEncoding=utf-8&useSSL=true&serverTimezone=GMT%2b8
 #    #url: jdbc:mysql://localhost:3306/artmember?characterEncoding=utf-8&useSSL=true&serverTimezone=GMT%2b8
 #    username: root
-#    #password: Macro@!@#
+#    #password: Macro@!
 #    password: root
 
 mybatis:
@@ -31,7 +31,19 @@ mybatis:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 #分页pageHelper
-pagehelper:
-  helper-dialect: mysql
-  reasonable: true
-  support-methods-arguments: true
+#pagehelper:
+#  helper-dialect: mysql
+#  reasonable: true
+#  support-methods-arguments: true
+
+rootDirPath: D:/HanLP/data
+
+HanLP:
+  CustomDictionary:
+    path:
+      categoryDict: ${rootDirPath}/dictionary/custom/categoryDict.txt
+      culturalRelicDict: ${rootDirPath}/dictionary/custom/culturalRelicDict.txt
+      peopleDict: ${rootDirPath}/dictionary/custom/peopleDict.txt
+      scoreDict: ${rootDirPath}/dictionary/custom/scoreDict.txt
+    cache:
+      path: ${rootDirPath}/dictionary/custom/CustomDictionary.txt.bin

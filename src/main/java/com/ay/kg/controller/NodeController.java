@@ -1,17 +1,15 @@
 package com.ay.kg.controller;
 
+import com.ay.kg.model.ApocInfo;
 import com.ay.kg.model.Node;
 import com.ay.kg.service.NodeService;
 import com.ay.kg.util.PageParam;
 import com.ay.kg.util.PageResult;
 import com.ay.kg.util.Result;
 import com.ay.kg.util.JavaGetProperty;
-import com.google.common.collect.Lists;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.apache.ibatis.annotations.Param;
-import org.neo4j.driver.v1.Record;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
@@ -68,7 +66,7 @@ public class NodeController  extends JavaGetProperty{
                               @ApiParam(name="leftNodeNumber",value="节点UUID",required=true) String nodeNumber,
                               @ApiParam(name="num",value="要获取的数量",required=true) Long num) {
 
-        List<Record> list= nodeService.getNodeAndRelationshipList(label, nodeNumber, num);
+        List<Map> list= nodeService.getNodeAndRelationshipList(label, nodeNumber, num);
         System.err.println(list);
         if(list.size()!=0){
             return Result.toClient(list);
@@ -96,7 +94,7 @@ public class NodeController  extends JavaGetProperty{
     /**
      * 查询指定节点的深度
      * http://localhost:8082/node/getDepthOfQueryNode?leftLabel=people&num=2&leftNodeNumber=8ca8026da0c94a76bb5e63022c1e39cb
-     * @param pageNum 第几页
+     * @param
      * @param leftLabel 节点标签
      * @param num 节点的第n级关系
      * @param leftNodeNumber 节点的标识
@@ -420,6 +418,24 @@ public class NodeController  extends JavaGetProperty{
         return "请联系管理员";
     }
 
+    /**
+     * 动态的批量导入关系
+     * 根据哪一个字段导入关系
+     *http://localhost:8080/node/importCsv?fileName=me_you&leftLable=me&rightLable=you&leftKey=node_number&rightKye=node_number
+     * @param apocInfo
+     * @return
+     */
+    @RequestMapping("importCsv")
+    public String importCsv(ApocInfo apocInfo) {
 
+        System.err.println(apocInfo);
+        Integer n=nodeService.importCsv(apocInfo);
+        System.err.println(n);
+        if (n <0) {
+            return Result.toClient("200","操作成功",n);
+        }else {
+            return Result.toClient("400","操作失败");
+        }
+    }
 
 }

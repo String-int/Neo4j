@@ -1,9 +1,11 @@
 package com.ay.kg.service;
 
+import com.ay.kg.model.ApocInfo;
 import com.ay.kg.model.Node;
 import org.apache.ibatis.annotations.Param;
-import org.neo4j.driver.v1.Record;
+
 import java.util.List;
+import java.util.Map;
 
 public interface NodeService {
 
@@ -31,10 +33,10 @@ public interface NodeService {
      * @param num
      * @return
      */
-    List<Record> getNodeAndRelationshipList(String leftLabel,String leftNodeNumber,Long num);
+    List<Map> getNodeAndRelationshipList(String leftLabel, String leftNodeNumber, Long num);
 
 
-    List<Record> getNodeInformation(String leftLabel,String leftNodeNumber);
+    List<Map> getNodeInformation(String leftLabel,String leftNodeNumber);
 
     /***
      * 批量查询
@@ -183,5 +185,10 @@ public interface NodeService {
     int batchCreateRelationShip(@Param("leftLabel") String leftLabel,@Param("leftNodeNumber")List<String> leftNodeNumber,@Param("rightLabel")String rightLabel,@Param("rightNodeNumber")List<String> rightNodeNumber,@Param("type")String type);
 
 
-
+    /**
+     * 用csv的方式批量导入节点关系
+     * @param apocInfo
+     * @return
+     */
+    Integer importCsv(ApocInfo apocInfo);
 }

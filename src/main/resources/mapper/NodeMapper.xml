@@ -245,4 +245,14 @@
         create (a)-[r:`${type}`]->(b)
     </insert>
 
+    <!--批量导入动态的节点关系-->
+    <insert id="importCsv">
+        load csv with headers from "file:///${fileName}.csv" as line
+       match(from:${leftLable}{${leftKey}:line.leftValue})
+       match(to:${rightLable}{${rightKye}:line.rightValue})
+       with from ,to ,line
+       call apoc.create.relationship(from,line.relationship,{},to) yield rel
+       return count(rel)
+    </insert>
+
 </mapper>
