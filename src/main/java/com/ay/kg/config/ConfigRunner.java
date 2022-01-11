@@ -83,14 +83,14 @@ public class ConfigRunner implements CommandLineRunner {
                     case 0:
                         CustomDictWordUtils.setNatureAndFrequency(word,"nm 0",true);
                         break;
-                    /**设置文物类型名词 词性 == ng 0*/
+                    /**设置人物类型名词 词性 == nnt 0*/
                     case 1:
-                        CustomDictWordUtils.setNatureAndFrequency(word,"ng 0",true);
+                        CustomDictWordUtils.setNatureAndFrequency(word,"nnt 0",true);
                         break;
                     /**设置人物名词 词性 == nnt 0*/
-                    case 2:
-                        CustomDictWordUtils.setNatureAndFrequency(word,"x 0",true);
-                        break;
+//                    case 2:
+//                        CustomDictWordUtils.setNatureAndFrequency(word,"x 0",true);
+//                        break;
                     default:
                         break;
                 }

@@ -28,12 +28,12 @@ public interface NodeService {
      * 随机获取有关系的节点
      * 根据A节点标签获取,A节点的数据和A节点的下一级节点数据
      * http://localhost:8080/node/getRandNode?leftLabel=age&nodeNumber=c989ff1d2a6911ec9c3e00e04a68073f&num=6
-     * @param leftLabel
-     * @param leftNodeNumber
+     * @param label
+     * @param nodeNumber
      * @param num
      * @return
      */
-    List<Map> getNodeAndRelationshipList(String leftLabel, String leftNodeNumber, Long num);
+    List<Map> getNodeAndRelationshipList(String label,String nodeNumber,Long num,String pageNumber);
 
 
     List<Map> getNodeInformation(String leftLabel,String leftNodeNumber);
@@ -124,10 +124,10 @@ public interface NodeService {
      * @param leftType
      * @param rightLabel
      * @param rightNodeNumber
-     * @param righType
+     * @param rightType
      * @return
      */
-    int updateNodeRelationshipOne(String leftLabel,String  leftNodeNumber,String leftType,String rightLabel,String  rightNodeNumber,String righType);
+    int updateNodeRelationshipOne(String leftLabel,String  leftNodeNumber,String leftType,String rightLabel,String  rightNodeNumber,String rightType);
 
     /**
      * 查询所有关系的数量
@@ -191,4 +191,33 @@ public interface NodeService {
      * @return
      */
     Integer importCsv(ApocInfo apocInfo);
+
+    /**
+     * 关系比例
+     * @param leftLabel
+     * @return
+     */
+    Map getRelationshipProportion(@Param("leftLabel") String leftLabel);
+    /**
+     * 查询所有节点
+     * @param leftNodeNumber
+     * @param leftNodeName
+     * @param leftLabel
+     * @param pageNum
+     * @param pageSize
+     * @return
+     */
+    List<Node> getAllNode(String leftNodeNumber, String leftNodeName, String leftLabel, int pageNum, int pageSize);
+
+    /**
+     * 查询所有节点的数量
+     * @param leftNodeNumber
+     * @param leftNodeName
+     * @param leftLabel
+     * @param pageNum
+     * @param pageSize
+     * @return
+     */
+    int getAllNodeCount(String leftNodeNumber, String leftNodeName, String leftLabel);
+
 }

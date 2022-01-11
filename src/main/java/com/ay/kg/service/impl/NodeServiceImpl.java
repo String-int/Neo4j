@@ -28,11 +28,11 @@ public class NodeServiceImpl implements NodeService {
     }
 
     @Override
-    public List<Map> getNodeAndRelationshipList(String leftLabel, String leftNodeNumber, Long num) {
-        return nodeMapper.getNodeAndRelationshipList( leftLabel,  leftNodeNumber,  num);
-    }
+    public List<Map> getNodeAndRelationshipList(String leftLabel, String leftNodeNumber, Long num,String pageNumber) {
 
-    @Override
+        return nodeMapper.getNodeAndRelationshipList(leftLabel, leftNodeNumber, num, pageNumber);
+    }
+        @Override
     public List<Map> getNodeInformation(String leftLabel, String leftNodeNumber) {
         return nodeMapper.getNodeInformation( leftLabel, leftNodeNumber);
     }
@@ -88,8 +88,8 @@ public class NodeServiceImpl implements NodeService {
     }
 
     @Override
-    public int updateNodeRelationshipOne(String leftLabel, String leftNodeNumber, String leftType, String rightLabel, String rightNodeNumber, String righType) {
-        return nodeMapper.updateNodeRelationshipOne( leftLabel,  leftNodeNumber,  leftType,  rightLabel,  rightNodeNumber,  righType);
+    public int updateNodeRelationshipOne(String leftLabel, String leftNodeNumber, String leftType, String rightLabel, String rightNodeNumber, String rightType) {
+        return nodeMapper.updateNodeRelationshipOne( leftLabel,  leftNodeNumber,  leftType,  rightLabel,  rightNodeNumber,  rightType);
     }
 
     @Override
@@ -131,4 +131,20 @@ public class NodeServiceImpl implements NodeService {
     public Integer importCsv(ApocInfo apocInfo) {
         return nodeMapper.importCsv(apocInfo);
     }
+
+    @Override
+    public Map getRelationshipProportion(String leftLabel) {
+        return nodeMapper.getRelationshipProportion(leftLabel);
+    }
+
+    @Override
+    public List<Node> getAllNode(String leftNodeNumber, String leftNodeName, String leftLabel, int pageNum, int pageSize) {
+        return nodeMapper.getAllNode(leftNodeNumber, leftNodeName, leftLabel, pageNum, pageSize);
+    }
+
+    @Override
+    public int getAllNodeCount(String leftNodeNumber, String leftNodeName, String leftLabel) {
+        return nodeMapper.getAllNodeCount(leftNodeNumber, leftNodeName, leftLabel);
+    }
+
 }

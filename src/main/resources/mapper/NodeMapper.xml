@@ -149,14 +149,24 @@
     </select>
 
     <select id="getNodeAndRelationshipList" resultType="java.util.Map">
-        MATCH (n)-[sp]-(m) where labels(n)=['${leftLabel}'] and n.node_number='${leftNodeNumber}' RETURN
-        labels(n)[0] as labelOneself,
-        n,
-        type(sp) as type,
-        labels(m)[0] as label, m,
-        rand() as r Order BY r LIMIT ${num}
+        MATCH (n)-[sp]-(m)
+        <where>
+            labels(n)=['${label}'] and n.node_number='${nodeNumber}' RETURN
+            labels(n)[0] as labelOneself,
+            n,
+            type(sp) as type,
+            labels(m)[0] as label, m,
+            rand() as r Order BY r
+
+            <if test="pageNumber!=null">
+                skip ${pageNumber}
+            </if>
+        </where>
+
+        LIMIT ${num}
 
     </select>
+
     <select id="BatchQuery" resultType="com.ay.kg.model.Node">
         MATCH (n) where labels(n)=['${leftLabel}'] and n.node_number in
         <foreach item="item"  collection="nodeNumberList" open="[" separator="," close="]">
@@ -254,5 +264,40 @@
        call apoc.create.relationship(from,line.relationship,{},to) yield rel
        return count(rel)
     </insert>
+    <select id="getRelationshipProportion" resultType="java.util.Map">
+        match(n:${leftLabel}) -[r]-() return count(r) as num,labels(n)[0] as label
+    </select>
 
+    <select id="getAllNode" resultMap="neo4jMap">
+        match(n) where 1=1
+        <if test="leftLabel != null and leftLabel != ''">
+            and labels(n)=['${leftLabel}']
+        </if>
+        <if test="leftNodeName != null and leftNodeName != ''">
+            and n.node_name=~'.*${leftNodeName}.*'
+        </if>
+        <if test="leftNodeNumber != null and leftNodeNumber != ''">
+            and n.node_number='${leftNodeNumber}'
+        </if>
+        return
+        id(n) as node_id, n.node_name as node_name,n.node_number as node_number,n.gender as gender,n.age as age ,n.cover as cover ,n.author as author
+        ,n.intro as intro ,n.category as category ,n.opus_content as opus_content, n.texture as texture,n.function_category as function_category
+        ,n.parent_age as parent_age, n.node_no as node_no, n.audit_status as audit_status, n.source_unit as source_unit
+        <if test="pageNum >= 0 and pageSize > 0">
+            skip ${pageNum} limit ${pageSize}
+        </if>
+    </select>
+    <select id="getAllNodeCount" resultType="java.lang.Integer">
+        match(n) where 1=1
+        <if test="leftLabel != null and leftLabel != ''">
+            and labels(n)=['${leftLabel}']
+        </if>
+        <if test="leftNodeName != null and leftNodeName != ''">
+            and n.node_name=~'.*${leftNodeName}.*'
+        </if>
+        <if test="leftNodeNumber != null and leftNodeNumber != ''">
+            and n.node_number='${leftNodeNumber}'
+        </if>
+        return count(n)
+    </select>
 </mapper>

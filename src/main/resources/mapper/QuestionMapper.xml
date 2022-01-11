@@ -3,9 +3,51 @@
 <mapper namespace="com.ay.kg.mapper.QuestionMapper">
 
     <select id="getCulturalRelicAge" resultType="String" parameterType="String">
-        MATCH (n:culturalRelic{node_name:#{nodeName}}) RETURN n.parent_age
+        MATCH (n:culturalRelic{node_name:#{nodeName}}) RETURN n.parent_age LIMIT 1
     </select>
+
     <select id="getCulturalRelicTexture" resultType="java.lang.String">
-        MATCH (n:culturalRelic{node_name:#{nodeName}}) RETURN n.texture
+        MATCH (n:culturalRelic{node_name:#{nodeName}}) RETURN n.texture LIMIT 1
     </select>
+
+
+    <select id="getCulturalRelicFunctionCategory" resultType="java.lang.String">
+        MATCH (n:culturalRelic{node_name:#{nodeName}}) RETURN n.function_category LIMIT 1
+    </select>
+
+    <select id="getCulturalRelicGrade" resultType="java.lang.String">
+        MATCH (n:culturalRelic{node_name:#{nodeName}})-[r]-(m:grade) RETURN m.node_name LIMIT 1
+    </select>
+
+    <select id="getCulturalRelicCategory" resultType="java.lang.String">
+        MATCH (n:culturalRelic{node_name:#{nodeName}}) RETURN n.category LIMIT 1
+    </select>
+
+    <select id="getCulturalRelicIntro" resultType="java.lang.String">
+        MATCH (n:culturalRelic{node_name:#{nodeName}}) RETURN n.intro LIMIT 1
+    </select>
+
+
+
+
+    <select id="getPeopleAge" resultType="java.lang.String">
+        MATCH (n:people{node_name:#{nodeName}}) RETURN n.parent_age LIMIT 1
+    </select>
+
+    <select id="getPeopleSon" resultType="java.lang.String">
+        MATCH (n:people{node_name:#{nodeName}})-[r:`父→子`]->(m) RETURN m.node_name
+    </select>
+    <select id="getPeopleDescendants" resultType="java.lang.String">
+        MATCH (n:people{node_name:#{nodeName}})-[r:`父→子`|`祖→孙`|`祖父→九世孙`]->(m) RETURN m.node_name
+    </select>
+    <select id="getPeopleWife" resultType="java.lang.String">
+        MATCH (n:people{node_name:#{nodeName}})-[r:`夫→妻`]->(m) RETURN m.node_name
+    </select>
+    <select id="getPeopleIntro" resultType="java.lang.String">
+        MATCH (n:people{node_name:#{nodeName}})  RETURN n.intro LIMIT 1
+    </select>
+    <select id="getPeopleEvent" resultType="java.lang.String">
+        MATCH (n:people{node_name:#{nodeName}})-[r:`主导`|`在位/统治`|`参与`|`对战/被困`|`发起`]->(m) RETURN m.node_name
+    </select>
+
 </mapper>

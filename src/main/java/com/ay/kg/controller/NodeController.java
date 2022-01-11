@@ -53,7 +53,7 @@ public class NodeController  extends JavaGetProperty{
 
     /**
      * 根据A节点标签获取,A节点的数据和A节点的下一级节点数据
-     * http://localhost:8080/node/getNodeAndRelationshipList?label=age&nodeNumber=c989ff1d2a6911ec9c3e00e04a68073f&num=6
+     * http://localhost:8082/node/getNodeAndRelationshipList?label=age&nodeNumber=c989ff1d2a6911ec9c3e00e04a68073f&num=6&pageNumber=2
      * @param label
      * @param nodeNumber
      * @param num
@@ -62,11 +62,12 @@ public class NodeController  extends JavaGetProperty{
 
     @ApiOperation(value="获取节点及下一级节点数据",tags = {"获取节点及下一级节点数据"}, notes="根据A节点标签获取,A节点的数据和A节点的下一级节点数据,")
     @RequestMapping(value = "getNodeAndRelationshipList", method = RequestMethod.POST)
-    public String getNodeAndRelationshipList(@ApiParam(name="leftLabel",value="节点标签",required=true) String label,
-                              @ApiParam(name="leftNodeNumber",value="节点UUID",required=true) String nodeNumber,
-                              @ApiParam(name="num",value="要获取的数量",required=true) Long num) {
+    public String getNodeAndRelationshipList(@ApiParam(name="label",value="节点标签",required=true) String label,
+                                             @ApiParam(name="nodeNumber",value="节点UUID",required=true) String nodeNumber,
+                                             @ApiParam(name="num",value="要获取的数量",required=true) Long num,
+                                             @ApiParam(name="pageNumber",value="页数",required=false) String pageNumber) throws Exception{
+        List<Map> list= nodeService.getNodeAndRelationshipList(label, nodeNumber, num,pageNumber);
 
-        List<Map> list= nodeService.getNodeAndRelationshipList(label, nodeNumber, num);
         System.err.println(list);
         if(list.size()!=0){
             return Result.toClient(list);
@@ -438,4 +439,58 @@ public class NodeController  extends JavaGetProperty{
         }
     }
 
+    /**
+     * 关系比例
+     * http://localhost:8082/node/getRelationshipProportion?label=age
+     * @return
+     */
+    @ApiOperation(value="关系比例",tags = {"关系比例"}, notes="关系比例")
+    @RequestMapping(value = "getRelationshipProportion", method = RequestMethod.POST)
+    public String getRelationshipProportion() throws Exception{
+        Map agenum= nodeService.getRelationshipProportion("age");
+        Map opusnum= nodeService.getRelationshipProportion("opus");
+        Map eventnum= nodeService.getRelationshipProportion("event");
+        Map peoplenum= nodeService.getRelationshipProportion("people");
+
+        HashMap map=new HashMap();
+        map.put("agenum",agenum);
+        map.put("opusnum",opusnum);
+        map.put("eventnum",eventnum);
+        map.put("peoplenum",peoplenum);
+        if(map!=null){
+            return Result.toClient("200","获取成功",map);
+        }else {
+            return Result.toClient("400","参数错误");
+        }
+
+    }
+
+    /**
+     * http://localhost:8082/node/getAllNode?pageNum=1&pageSize=5&leftLabel=age&leftNodeName=宋&leftNodeNumber=c98a03622a6911ec9c3e00e04a68073f
+     * 分页查询所有节点
+     * @param pageParam
+     * @param leftLabel
+     * @param leftNodeName
+     * @param leftNodeNumber
+     * @return
+     * @throws Exception
+     */
+    @ApiOperation(value = "使用工具类对没有关系的节点信息查询", notes = "传入两个参数，当前第几页，每页分几条")
+    @RequestMapping(value = "getAllNode")
+    public Object getAllNode(//@ApiParam(name = "pageNum", value = "两个参数pageNum 第几页，pageSize 每页几条", required = true) int pageNum,
+                             @ApiParam(name = "pageParam", value = "两个参数pageNum 第几页，pageSize 每页几条", required = true) PageParam pageParam,
+                             @ApiParam(name = "leftLabel", value = "标签名", required = true) String leftLabel,
+                             @ApiParam(name = "leftNodeName", value = "节点名", required = true) String leftNodeName,
+                             @ApiParam(name = "leftNodeNumber", value = "节点标识", required = true) String leftNodeNumber
+    ) throws Exception{
+        int pageStart = pageParam.getPageStart();
+        int pageNum = pageParam.getPageNum();
+        int pageSize = pageParam.getPageSize();
+        List<Node> models = nodeService.getAllNode(leftNodeNumber, leftNodeName, leftLabel, pageStart, pageSize);
+        int total = nodeService.getAllNodeCount(leftNodeNumber, leftNodeName, leftLabel);
+
+        if (models != null){
+            return Result.toClient("1", "有数据", total, models);
+        } return Result.toClient("0", "无数据");
+    }
 }
